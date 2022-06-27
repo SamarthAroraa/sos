@@ -1,10 +1,19 @@
+import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
-
+// @ts-ignore
+import RNSoundLevel from 'react-native-sound-level'
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
+  useEffect(() => {
+    RNSoundLevel.start()
+    RNSoundLevel.onNewFrame = (data:any) => {
+    // see "Returned data" section below
+    console.log('Sound level info', data)
+  }
+  },[])
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tab One</Text>
