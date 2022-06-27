@@ -1,0 +1,17 @@
+{
+  "name": "internhackathon2022",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "backend": "export FLASK_APP=backend && export FLASK_ENV=development && flask run",
+    "frontend": "cd client-app && yarn start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.soma.salesforce.com:samarth-arora/InternHackathon2022.git"
+  },
+  "author": "",
+  "license": "ISC"
+}
