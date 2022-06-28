@@ -62,5 +62,4 @@ typing_extensions==4.2.0
 unicodedata2==14.0.0
 watchdog==2.1.6
 webdataset==0.2.5
-xmlrpclib==1.0.1
 zipp==3.7.0
