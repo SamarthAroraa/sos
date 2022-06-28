@@ -24,9 +24,12 @@ def send_slack_message(text):
     print(response.text)
 
 app = Flask(__name__)
-@app.route('/hello')
+
+
+
+@app.route('/')
 def hello():
-    return 'Hello, World!'
+    return 'Welcome to SOS backend!'
 
 @app.route('/slack/sendText')
 def sendText():
