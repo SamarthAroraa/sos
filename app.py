@@ -3,7 +3,11 @@ import os
 from flask import Flask
 import requests
 from flask import request
-import torchaudio
+# import torchaudio
+# from speechbrain.pretrained import EncoderClassifier
+
+import speechbrain as sb
+
 
 def send_slack_message(text):
     import requests
@@ -40,3 +44,12 @@ def sendText():
         return {"text": text, "status": 200}
     except:
         return {"message": "Internal server error", "status": 500}
+
+@app.route('/serveModel')
+def serveModel():
+    # return "Test"
+    classifier = sb.pretrained.EncoderClassifier.from_hparams(source="speechbrain/urbansound8k_ecapa", savedir="pretrained_models/gurbansound8k_ecapa")
+    example_audio_file_path = 'siren-1-decoded.wav'
+    out_prob, score, index, text_lab = classifier.classify_file(example_audio_file_path)
+    print(text_lab)
+    return(str(text_lab[0]))
