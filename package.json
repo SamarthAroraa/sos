@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "backend": "export FLASK_APP=backend/app.py && export FLASK_ENV=development && flask run",
+    "backend": "export FLASK_APP=app.py && export FLASK_ENV=development && flask run",
     "frontend": "cd client-app && yarn start"
   },
   "repository": {
