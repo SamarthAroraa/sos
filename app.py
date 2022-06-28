@@ -61,14 +61,17 @@ def serveModel():
     if(request.method == 'GET'):
         return 'This is a post request test, use post method'
     if(request.method == 'POST'):
-        file = request.files['wav_file']
-        file.save('data/runtime.wav')
+        f = request.get_json()
+        blob = (f['wav_blob'])
+        print(blob[:4])
+        example_audio_file_path = 'data/runtime2.wav'
+        
+        base64_to_wav(blob,example_audio_file_path )
         
         # return "Test"
         classifier = sb.pretrained.EncoderClassifier.from_hparams(source="speechbrain/urbansound8k_ecapa", savedir="pretrained_models/gurbansound8k_ecapa")
-        example_audio_file_path = 'data/runtime.wav'
         out_prob, score, index, text_lab = classifier.classify_file(example_audio_file_path)
-        print(text_lab)
+        # print(text_lab)
         return(str(text_lab[0]))
 
 @app.route('/getBlob', methods=['GET', 'POST'])

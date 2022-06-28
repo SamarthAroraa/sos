@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 // @ts-ignore
 import RNSoundLevel from 'react-native-sound-level'
@@ -7,7 +7,7 @@ import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 import AudioRecord from 'react-native-audio-record';
 import { Dirs, FileSystem } from 'react-native-file-access';
-
+import axios from 'axios'
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
   const options = {
@@ -17,26 +17,78 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     audioSource: 6,     // android only (see below)
     wavFile: 'test.wav' // default 'audio.wav'
   };
- 
- 
+  const [classification, setClassification] = useState("Unclassified")
+
+  const startRecording = () => {
+    
+      AudioRecord.start();
+      console.log('start')
+      
+
+    
+    AudioRecord.on('data', data => {
+      //send data to backend every  seconds
+    });
+
+    
+
+  }
+
+const sampleAudio = async () => {
+  await stopRecording();
+  startRecording();
+}
   useEffect(() => {
-    // RNSoundLevel.start()
-    // RNSoundLevel.onNewFrame = (data:any) => {
-    // // see "Returned data" section below
-    // console.log('Sound level info', data)
-  // }
-  AudioRecord.init(options);
-  AudioRecord.start();
-  AudioRecord.on('data', data => {
-   console.log('data', data)
-  });
+
+    AudioRecord.init(options);
+    startRecording();
+    setInterval(async ()=>{await sampleAudio()},5000)
+    
+
+
   },[])
-  let audioFile
+
+
+
+ 
+  // useEffect(() => {
+    
+  //   stopRecording();
+
+  // }, [classification])
+
   const stopRecording = async () => {
-    audioFile = await AudioRecord.stop();
+      
+    
+
+    let audioFile = await AudioRecord.stop();
     console.log("audioFIle",audioFile)
-    const text = await FileSystem.readFile(Dirs.CacheDir + '');
-    console.log(text)
+    const recording = await FileSystem.readFile(audioFile, 'base64');
+    console.log('stopping')
+
+    let req_data = JSON.stringify({
+      "wav_blob": recording
+    });
+    let config = {
+      method: 'post',
+      url: 'https://safeoversorry.pagekite.me/serveModel',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: req_data
+    };
+    axios(config)
+      .then(function (response) {
+        setClassification(JSON.stringify(response.data));
+        console.log(JSON.stringify(response.data))
+
+      })
+      .catch(function (error) {
+        console.log(error);
+
+
+      });
+
   } 
   
  
@@ -44,9 +96,14 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
+      <Text style={styles.title}>{classification}</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <EditScreenInfo path="/screens/TabOneScreen.tsx" />
+      <TouchableOpacity onPress={() => {
+        startRecording()
+      }}>
+        <Text>Start Recording</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => {
         stopRecording()
       }}>
