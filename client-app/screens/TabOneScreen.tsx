@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, Button } from 'react-native';
 // @ts-ignore
 import RNSoundLevel from 'react-native-sound-level'
 import EditScreenInfo from '../components/EditScreenInfo';
@@ -9,7 +9,13 @@ import AudioRecord from 'react-native-audio-record';
 import { Dirs, FileSystem } from 'react-native-file-access';
 import axios from 'axios'
 import sendNotifications from '../utils/SendNotification'
-import ModalScreen from './ModalScreen';
+// import ModalScreen from './ModalScreen';
+import AddContact from '../components/AddContact';
+// import {Button, View, StyleSheet} from 'react-native';
+import { AsyncStorage } from 'react-native';
+
+
+import Modal from 'react-native-modal';
 
 
 
@@ -26,6 +32,24 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const [emergency, setEmergency] = useState(false)
   const [decibel, setDecibel] = useState();
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
+
+
+
+  const getContactName = async () => {
+    let name = await AsyncStorage.getItem('emergency_contact_name');
+    console.log(name)
+    return name;
+  }
+
+  const getContactSlackId = async () => {
+    let id = await AsyncStorage.getItem('emergency_contact_slack');
+    console.log(id)
+    return id;
+  }
 
   const startRecording = () => {
     RNSoundLevel.start()
@@ -49,19 +73,46 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     RNSoundLevel.onNewFrame = (data: any) => {
       // see "Returned data" section below
       setDecibel(data.value + 160)
-      console.log('Sound level info', data)
+      // console.log('Sound level info', data)
     }
 
 
   }, [])
 
+  const SendSOSLocation = () => {
+    console.log('sos sending')
+    let req_data = JSON.stringify({
+      "slackId": getContactSlackId,
+      "Name": getContactName
+    });
+    let config = {
+      method: 'post',
+      url: 'https://safeoversorry.pagekite.me/slackLocation',
+      // url: 'https://127.0.0.1:5000/serveModel',
 
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: req_data
+    };
+    axios(config)
+      .then(function (response) {
+        // setClassification(JSON.stringify(response.data['prediction']));
+        // setEmergency(response.data['EMERGENCY']);
+        console.log(response)
+      })
+      .catch(function (error) {
+        console.log(error);
+
+
+      });
+  }
   useEffect(() => {
     if (emergency) {
       sendNotifications()
+      SendSOSLocation()
     }
   }, [emergency])
-
 
 
   // useEffect(() => {
@@ -107,24 +158,6 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
   }
 
-
-  // return (
-  //   <View style={styles.container}>
-  //     <Text style={styles.title}>{classification}</Text>
-  //     <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-  //     <EditScreenInfo path="/screens/TabOneScreen.tsx" />
-  //     {/* <TouchableOpacity onPress={() => {
-  //       startRecording()
-  //     }}>
-  //       <Text>Start Recording</Text>
-  //     </TouchableOpacity>
-  //     <TouchableOpacity onPress={() => {
-  //       stopRecording()
-  //     }}>
-  //       <Text>Stop Recording</Text>
-  //     </TouchableOpacity> */}
-  //   </View>
-  // );
   const type = 1;
   return (
     <View style={styles.container}>
@@ -146,7 +179,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => {
+
+      {/* <TouchableOpacity onPress={() => {
         console.log("Add modal Here")
       }} style={{
         width: '90%',
@@ -162,7 +196,19 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
         <Text style={{ fontSize: 20, color: 'blue' }}>
           Add Emergency Contact
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <View style={styles.container}>
+        <Button title="Add Emergency Contact" onPress={toggleModal} />
+        <Modal
+          isVisible={isModalVisible}>
+          <View>
+            <AddContact />
+            <View>
+              <Button title="Hide modal" onPress={toggleModal} />
+            </View>
+          </View>
+        </Modal>
+      </View>
     </View>
   );
 }

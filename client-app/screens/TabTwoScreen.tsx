@@ -1,7 +1,10 @@
 import { StyleSheet, TouchableOpacity } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 
 import EditScreenInfo from '../components/EditScreenInfo';
-import { Text, View } from '../components/Themed';
+
+import { AsyncStorage } from 'react-native';
+import { useEffect, useState } from 'react';
 
 // import { useEffect, useState } from 'react';
 // import { TouchableOpacity, StyleSheet } from 'react-native';
@@ -14,74 +17,71 @@ import { Text, View } from '../components/Themed';
 // import { Dirs, FileSystem } from 'react-native-file-access';
 // import axios from 'axios'
 
+
+
+
 export default function TabTwoScreen() {
 
+  const [name, setName] = useState<string | null>("")
+  const [id,setId]  = useState<string | null>("")
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      marginTop: 20
+    },
+    sirenContainer: {
+      width: '90%',
+      margin: 'auto',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 20,
+      paddingHorizontal: 40
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: 'bold',
+    },
+    separator: {
+      marginVertical: 30,
+      height: 1,
+      width: '80%',
+    },
+  });
+  
+
+  const getContactName = async () => {
+    let name = await AsyncStorage.getItem('emergency_contact_name');
+    setName(name);
+    console.log(name)
+    return name;
+  }
+  
+  const getContactSlackId = async () => {
+    let id = await AsyncStorage.getItem('emergency_contact_slack');
+    setId(id)
+    console.log(id)
+    return id;
+  }
+
+  useEffect(()=>{
+     getContactName()
+    getContactSlackId();
+   
+  },[])
+  
   const type = 1;
   return (
     <View style={styles.container}>
-      <View style={[styles.sirenContainer, {backgroundColor:type === 1 ? 'blue' : 'red',}]}>
-        <Text style={{fontSize: 20, color:''}}>
-          Siren
-        </Text>
-        <Text>
-          108dB
-        </Text>
-      </View>
-
-      <TouchableOpacity style={{height: 200, width: 200, borderRadius: 100, backgroundColor:'red',
-        justifyContent:'center',
-        alignItems:'center',
-        marginTop: 100,
-    }}>
-        <Text style={{fontSize: 40, color:'white', fontWeight:'bold'}}>
-          SOS
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => {
-        console.log("Add modal Here")
-      }} style={{ width: '90%',
-    margin:'auto',
-    display:'flex',
-    alignItems:'center',
-    justifyContent:'center',
-    paddingVertical: 20,
-    backgroundColor:'white',
-    marginTop: 200,
-    paddingHorizontal: 40}}>
-        <Text style={{fontSize: 20, color:'blue'}}>
-          Add Contact
-        </Text>
-       </TouchableOpacity>
-       </View>
+    <View>
+     <Text style={{ fontSize: 20, color: 'white', fontWeight: 'bold'}}><Text >EMERGENCY CONTACT NAME :</Text><Text style={{color:"green"}}>{name}</Text></Text>
+     <Text style={{ fontSize: 20, color: 'white', fontWeight: 'bold'}}><Text>EMERGENCY CONTACT SLACK ID :</Text><Text style={{color:"green"}}>{id}</Text></Text>
+     </View>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    marginTop: 20
-  },
-  sirenContainer:{
-    width: '90%',
-    margin:'auto',
-    display:'flex',
-    alignItems:'center',
-    justifyContent:'center',
-    paddingVertical: 20,
-    paddingHorizontal: 40
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});
 
 
 // import { useEffect, useState } from 'react';
