@@ -35,9 +35,9 @@ const AddContact = () => {
 
     return (
         // <View style={styles.container}>
-        <View>
-            <Text style={{ fontSize: 30, color: 'white', alignItems: 'center', marginBottom: 20, }}> Add Emergency Contact </Text>
-            <View >
+        <View >
+            <Text style={{ fontSize: 30, color: 'white', alignItems: 'center', marginBottom: 20 }}> Add Emergency Contact </Text>
+            <View style={{ backgroundColor: '#ffcdb2', justifyContent: 'center' }}>
                 <Text style={{ fontSize: 20, color: 'white', }}> Enter Contact Name </Text>
                 <TextInput value={contactName} onChangeText={handleContactChange} style={{ fontSize: 15, color: 'black', backgroundColor: '#C0C0C0' }} placeholder="Enter Contact Name" />
                 <Text style={{ fontSize: 20, color: 'white', }}> Enter Slack Id</Text>
@@ -46,6 +46,7 @@ const AddContact = () => {
                     onPress={handleSaveContact}
                 >
                     <Button
+                        color="#6d6875"
                         onPress={handleSaveContact}
                         title="" />
                 </TouchableOpacity>

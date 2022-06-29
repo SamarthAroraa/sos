@@ -35,6 +35,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const [classification, setClassification] = useState("Unclassified")
   const [emergency, setEmergency] = useState(false)
   const [decibel, setDecibel] = useState();
+  const [sendRequests, setSendRequests] = useState(true)
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {
@@ -56,10 +57,10 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   }
 
   const startRecording = () => {
-    RNSoundLevel.start()
+    // RNSoundLevel.start()
 
     AudioRecord.start();
-    console.log('start')
+    // console.log('start')
     AudioRecord.on('data', data => {
       // console.log(data);
     });
@@ -85,15 +86,12 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   useEffect(() => {
 
     AudioRecord.init(options);
+    // if (sendRequests) {
     startRecording();
     setInterval(async () => { await sampleAudio() }, 5000)
-    RNSoundLevel.onNewFrame = (data: any) => {
-      // see "Returned data" section below
-      setDecibel(data.value + 160)
-      // console.log('Sound level info', data)
-      setDecibel(data.value + 160)
-      // console.log('Sound level info', data)
-    }
+
+
+    // }
 
     getLocation()
 
@@ -129,10 +127,36 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   }
   useEffect(() => {
     if (emergency) {
-      sendNotifications()
-      SendSOSLocation()
+      if (sendRequests) {
+        sendNotifications()
+        // SendSOSLocation()
+      }
     }
   }, [emergency])
+
+  const toggleEmergency = () => {
+    //this means pressed I'm safe manually
+    // so disable auto classification 
+    if (sendRequests == true) {
+      if (emergency) {
+        setEmergency(false);
+
+        setSendRequests(false)
+        console.log('setting false')
+        setTimeout(() => {
+          setSendRequests(true)
+          console.log('setting back true')
+        }, 1000 * 60 * 1)
+      } else {
+        setEmergency(true)
+      }
+    } else {
+      setSendRequests(true);
+      setEmergency(true);
+    }
+
+  }
+
 
 
   // useEffect(() => {
@@ -144,10 +168,10 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const stopRecording = async () => {
 
     let audioFile = await AudioRecord.stop();
-    RNSoundLevel.stop()
+    // RNSoundLevel.stop()
     // console.log("audioFIle", audioFile)
     const recording = await FileSystem.readFile(audioFile, 'base64');
-    console.log('stopping')
+    // console.log('stopping')
 
     let req_data = JSON.stringify({
       "wav_blob": recording
@@ -181,21 +205,26 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const type = 1;
   return (
     <View style={styles.container}>
-      <View style={[styles.sirenContainer, { backgroundColor: emergency === false ? 'blue' : 'red', }]}>
-        <Text style={{ fontSize: 20, color: 'white' }}>{classification}</Text>
-        <Text>
-          {decibel}
-        </Text>
+      <View style={[styles.sirenContainer, { backgroundColor: emergency === false ? '#d8e2dc' : '#6d6875', }]}>
+        <Text style={{ fontSize: 20, color: emergency === false ? '#6d6875' : 'white', textAlign: 'center' }}>{sendRequests ? classification : "Auto classification disabled for 30 minutes"}</Text>
       </View>
 
       <TouchableOpacity style={{
-        height: 200, width: 200, borderRadius: 100, backgroundColor: emergency === false ? '#ffb4a2' : '#6d6875',
+        height: 250, width: 250, borderRadius: 150, backgroundColor: emergency === false ? '#ffb4a2' : '#6d6875',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 100,
-      }}>
-        <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold', textAlign: 'center', }}>
-          {emergency === false ? "HELP ME!" : "I'M SAFE NOW"}
+        marginTop: 80,
+        borderColor: 'white',
+        borderWidth: 2,
+        padding: 40,
+        marginBottom: 80
+      }}
+        onPress={toggleEmergency}
+      >
+        <Text style={{ fontSize: 35, color: 'white', fontWeight: 'bold', textAlign: 'center', }}>
+          {sendRequests ?
+            (emergency === false ? "Help Me!" : "I'm Safe Now.") :
+            "HELP ME!"}
         </Text>
       </TouchableOpacity>
 
@@ -217,14 +246,16 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
           Add Emergency Contact
         </Text>
       </TouchableOpacity> */}
-      <View style={styles.container}>
-        <Button title="Add Emergency Contact" onPress={toggleModal} />
+      <View style={[styles.container]}>
+        <Button color="#6d6875" style={{ padding: 20 }} title="Add Emergency Contact" onPress={toggleModal}>
+
+        </Button>
         <Modal
-          isVisible={isModalVisible}>
+          isVisible={isModalVisible} >
           <View>
             <AddContact />
-            <View>
-              <Button title="Hide modal" onPress={toggleModal} />
+            <View style={{ marginTop: 20 }}>
+              <Button color="#6d6875" title="Hide modal" onPress={toggleModal} />
             </View>
           </View>
         </Modal>
@@ -247,7 +278,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 20,
-    paddingHorizontal: 40
+    paddingHorizontal: 40,
+    height: 120,
+    borderRadius: 20,
+    marginTop: 20
   },
   title: {
     fontSize: 20,
