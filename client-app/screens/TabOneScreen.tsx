@@ -90,9 +90,7 @@ const sampleAudio = async () => {
       });
 
   } 
-  
- 
- 
+
   
   return (
     <View style={styles.container}>
@@ -122,10 +120,5 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
   },
 });
