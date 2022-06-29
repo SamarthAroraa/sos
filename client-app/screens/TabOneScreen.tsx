@@ -24,21 +24,17 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   };
   const [classification, setClassification] = useState("Unclassified")
   const [emergency, setEmergency] = useState(false)
+  const [decibel, setDecibel] = useState();
 
 
   const startRecording = () => {
+    RNSoundLevel.start()
 
     AudioRecord.start();
     console.log('start')
-
-
-
     AudioRecord.on('data', data => {
-      //send data to backend every 4 seconds
+      // console.log(data);
     });
-
-
-
   }
 
   const sampleAudio = async () => {
@@ -50,7 +46,11 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     AudioRecord.init(options);
     startRecording();
     setInterval(async () => { await sampleAudio() }, 5000)
-
+    RNSoundLevel.onNewFrame = (data: any) => {
+      // see "Returned data" section below
+      setDecibel(data.value + 160)
+      console.log('Sound level info', data)
+    }
 
 
   }, [])
@@ -72,10 +72,9 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
   const stopRecording = async () => {
 
-
-
     let audioFile = await AudioRecord.stop();
-    console.log("audioFIle", audioFile)
+    RNSoundLevel.stop()
+    // console.log("audioFIle", audioFile)
     const recording = await FileSystem.readFile(audioFile, 'base64');
     console.log('stopping')
 
@@ -97,7 +96,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
         setClassification(JSON.stringify(response.data['prediction']));
         setEmergency(response.data['EMERGENCY']);
 
-        console.log(JSON.stringify(response.data))
+        // console.log(JSON.stringify(response.data))
 
       })
       .catch(function (error) {
@@ -130,25 +129,20 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   return (
     <View style={styles.container}>
       <View style={[styles.sirenContainer, { backgroundColor: emergency === false ? 'blue' : 'red', }]}>
-        {/* <Text style={{fontSize: 20, color:''}}>
-          Siren
-        </Text> */}
-        <Text style={{ fontSize: 20, color: '' }}>{classification}</Text>
+        <Text style={{ fontSize: 20, color: 'white' }}>{classification}</Text>
         <Text>
-          108dB
+          {decibel}
         </Text>
-        {/* <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" /> */}
-        {/* <EditScreenInfo path="/screens/TabOneScreen.tsx" /> */}
       </View>
 
       <TouchableOpacity style={{
-        height: 200, width: 200, borderRadius: 100, backgroundColor: 'red',
+        height: 200, width: 200, borderRadius: 100, backgroundColor: emergency === false ? 'red' : 'green',
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 100,
       }}>
-        <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold' }}>
-          SOS
+        <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold', textAlign: 'center', }}>
+          {emergency === false ? "HELP ME!" : "I'M SAFE NOW"}
         </Text>
       </TouchableOpacity>
 
