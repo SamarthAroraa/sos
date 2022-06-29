@@ -9,6 +9,9 @@ import AudioRecord from 'react-native-audio-record';
 import { Dirs, FileSystem } from 'react-native-file-access';
 import axios from 'axios'
 
+
+
+
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
   const options = {
     sampleRate: 16000,  // default 44100
@@ -97,16 +100,7 @@ const sampleAudio = async () => {
       <Text style={styles.title}>{classification}</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <EditScreenInfo path="/screens/TabOneScreen.tsx" />
-      <TouchableOpacity onPress={() => {
-        startRecording()
-      }}>
-        <Text>Start Recording</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => {
-        stopRecording()
-      }}>
-        <Text>Stop Recording</Text>
-      </TouchableOpacity>
+
     </View>
   );
 }
