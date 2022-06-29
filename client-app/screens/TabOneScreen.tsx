@@ -130,25 +130,20 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   return (
     <View style={styles.container}>
       <View style={[styles.sirenContainer, { backgroundColor: emergency === false ? 'blue' : 'red', }]}>
-        {/* <Text style={{fontSize: 20, color:''}}>
-          Siren
-        </Text> */}
-        <Text style={{ fontSize: 20, color: '' }}>{classification}</Text>
+        <Text style={{ fontSize: 20, color: 'white' }}>{classification}</Text>
         <Text>
           108dB
         </Text>
-        {/* <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" /> */}
-        {/* <EditScreenInfo path="/screens/TabOneScreen.tsx" /> */}
       </View>
 
       <TouchableOpacity style={{
-        height: 200, width: 200, borderRadius: 100, backgroundColor: 'red',
+        height: 200, width: 200, borderRadius: 100, backgroundColor: emergency === false ? 'red' : 'green',
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 100,
       }}>
-        <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold' }}>
-          SOS
+        <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold', textAlign: 'center', }}>
+          {emergency === false ? "HELP ME!" : "I'M SAFE NOW"}
         </Text>
       </TouchableOpacity>
 
