@@ -189,7 +189,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
       </View>
 
       <TouchableOpacity style={{
-        height: 200, width: 200, borderRadius: 100, backgroundColor: emergency === false ? 'red' : 'green',
+        height: 200, width: 200, borderRadius: 100, backgroundColor: emergency === false ? '#ffb4a2' : '#6d6875',
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 100,
@@ -237,7 +237,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    marginTop: 20
+    marginTop: 20,
+    backgroundColor: '#e5989b'
   },
   sirenContainer: {
     width: '90%',
