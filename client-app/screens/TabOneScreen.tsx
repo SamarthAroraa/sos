@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 // @ts-ignore
@@ -10,6 +11,8 @@ import { Dirs, FileSystem } from 'react-native-file-access';
 import axios from 'axios'
 import sendNotifications from '../utils/SendNotification'
 import ModalScreen from './ModalScreen';
+import GetLocation from 'react-native-get-location'
+
 
 
 
@@ -42,6 +45,19 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     await stopRecording();
     startRecording();
   }
+  
+  const getLocation = () => {
+    GetLocation.getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 15000,
+    }).then(location => {
+      console.log(location);
+    }) .catch(error => {
+      const { code, message } = error;
+      console.warn(code, message);
+  })
+  }
+
   useEffect(() => {
 
     AudioRecord.init(options);
@@ -51,10 +67,14 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
     RNSoundLevel.onNewFrame = (data: any) => {
       // see "Returned data" section below
+      setDecibel(data.value +160)
+      // console.log('Sound level info', data)
       setDecibel(data.value + 160)
       // console.log('Sound level info', data)
     }
     }
+
+    getLocation()
 
   }, [])
 
