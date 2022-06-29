@@ -25,13 +25,14 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const [classification, setClassification] = useState("Unclassified")
   const [emergency, setEmergency] = useState(false)
   const [decibel, setDecibel] = useState();
+  const [sendRequests, setSendRequests] = useState(true)
 
 
   const startRecording = () => {
     RNSoundLevel.start()
 
     AudioRecord.start();
-    console.log('start')
+    // console.log('start')
     AudioRecord.on('data', data => {
       // console.log(data);
     });
@@ -44,23 +45,51 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   useEffect(() => {
 
     AudioRecord.init(options);
+    if (sendRequests) {
     startRecording();
     setInterval(async () => { await sampleAudio() }, 5000)
+
     RNSoundLevel.onNewFrame = (data: any) => {
       // see "Returned data" section below
       setDecibel(data.value + 160)
-      console.log('Sound level info', data)
+      // console.log('Sound level info', data)
     }
-
+    }
 
   }, [])
 
 
   useEffect(() => {
     if (emergency) {
+      if (sendRequests) {
       sendNotifications()
+      }
     }
   }, [emergency])
+
+  const toggleEmergency = () => {
+    //this means pressed I'm safe manually
+    // so disable auto classification 
+    if (sendRequests == true) {
+      if (emergency) {
+        setEmergency(false);
+
+        setSendRequests(false)
+        console.log('setting false')
+        setTimeout(() => {
+          setSendRequests(true)
+          console.log('setting back true')
+        }, 1000 * 60 * 1)
+      } else {
+        setEmergency(true)
+      }
+    } else {
+      setSendRequests(true);
+      setEmergency(true);
+    }
+
+  }
+
 
 
 
@@ -76,7 +105,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     RNSoundLevel.stop()
     // console.log("audioFIle", audioFile)
     const recording = await FileSystem.readFile(audioFile, 'base64');
-    console.log('stopping')
+    // console.log('stopping')
 
     let req_data = JSON.stringify({
       "wav_blob": recording
@@ -129,9 +158,9 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   return (
     <View style={styles.container}>
       <View style={[styles.sirenContainer, { backgroundColor: emergency === false ? 'blue' : 'red', }]}>
-        <Text style={{ fontSize: 20, color: 'white' }}>{classification}</Text>
+        <Text style={{ fontSize: 20, color: 'white' }}>{sendRequests ? classification : "Auto classification Disabled for 5 hours"}</Text>
         <Text>
-          {decibel}
+          {sendRequests ? decibel : "However, you can still trigger manual SOS"}
         </Text>
       </View>
 
@@ -140,9 +169,13 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 100,
-      }}>
+      }}
+        onPress={toggleEmergency}
+      >
         <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold', textAlign: 'center', }}>
-          {emergency === false ? "HELP ME!" : "I'M SAFE NOW"}
+          {sendRequests ?
+            (emergency === false ? "HELP ME!" : "I'M SAFE NOW") :
+            "HELP ME!"}
         </Text>
       </TouchableOpacity>
 
