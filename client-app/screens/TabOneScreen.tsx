@@ -31,7 +31,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
   const startRecording = () => {
     RNSoundLevel.start()
-    
+
     AudioRecord.start();
     console.log('start')
     AudioRecord.on('data', data => {
@@ -61,10 +61,12 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     AudioRecord.init(options);
     startRecording();
     setInterval(async () => { await sampleAudio() }, 5000)
-    RNSoundLevel.onNewFrame = (data:any) => {
+    RNSoundLevel.onNewFrame = (data: any) => {
       // see "Returned data" section below
       setDecibel(data.value +160)
       // console.log('Sound level info', data)
+      setDecibel(data.value + 160)
+      console.log('Sound level info', data)
     }
 
     getLocation()
@@ -145,22 +147,20 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   return (
     <View style={styles.container}>
       <View style={[styles.sirenContainer, { backgroundColor: emergency === false ? 'blue' : 'red', }]}>
-        <Text style={{ fontSize: 20, color: '' }}>{classification}</Text>
+        <Text style={{ fontSize: 20, color: 'white' }}>{classification}</Text>
         <Text>
           {decibel}
         </Text>
-        {/* <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" /> */}
-        {/* <EditScreenInfo path="/screens/TabOneScreen.tsx" /> */}
       </View>
 
       <TouchableOpacity style={{
-        height: 200, width: 200, borderRadius: 100, backgroundColor: 'red',
+        height: 200, width: 200, borderRadius: 100, backgroundColor: emergency === false ? 'red' : 'green',
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 100,
       }}>
-        <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold' }}>
-          SOS
+        <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold', textAlign: 'center', }}>
+          {emergency === false ? "HELP ME!" : "I'M SAFE NOW"}
         </Text>
       </TouchableOpacity>
 
