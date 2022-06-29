@@ -8,6 +8,7 @@ import { RootTabScreenProps } from '../types';
 import AudioRecord from 'react-native-audio-record';
 import { Dirs, FileSystem } from 'react-native-file-access';
 import axios from 'axios'
+import sendNotifications from '../utils/SendNotification'
 import ModalScreen from './ModalScreen';
 
 
@@ -33,7 +34,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
 
     AudioRecord.on('data', data => {
-      //send data to backend every seconds
+      //send data to backend every 4 seconds
     });
 
 
@@ -55,6 +56,11 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   }, [])
 
 
+  useEffect(() => {
+    if (emergency) {
+      sendNotifications()
+    }
+  }, [emergency])
 
 
 
