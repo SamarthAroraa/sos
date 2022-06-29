@@ -1,24 +1,55 @@
+from curses.ascii import EM
+import speechbrain as sb
 import os
 
 from flask import Flask
 import requests
 from flask import request
 import base64
+
+
 def base64_to_wav(base64_string, output_wav_file):
-  wav_file = open(output_wav_file, "wb")
-  decode_string = base64.b64decode(base64_string)
-  wav_file.write(decode_string)
+    wav_file = open(output_wav_file, "wb")
+    decode_string = base64.b64decode(base64_string)
+    wav_file.write(decode_string)
 
 # import torchaudio
 # from speechbrain.pretrained import EncoderClassifier
 
-import speechbrain as sb
 
 def base64_to_wav(base64_string, output_wav_file):
-  wav_file = open(output_wav_file, "wb")
-  decode_string = base64.b64decode(base64_string)
-  wav_file.write(decode_string)
+    wav_file = open(output_wav_file, "wb")
+    decode_string = base64.b64decode(base64_string)
+    wav_file.write(decode_string)
 
+
+class_mapping = [
+    "air_conditioner",
+    "car_horn",
+    "children_playing",
+    "dog_bark",
+    "drilling",
+    "engine_idling",
+    "gun_shot",
+    "jackhammer",
+    "siren",
+    "street_music"
+]
+
+
+# def check_emergency(predicted_class, decibel_val):
+def check_emergency(predicted_class):
+    emergencies = ['gun_shot', 'siren']
+    DECIBEL_THRESHOLD = 85
+    EMERGENCY = False
+    # EMERGENCY = (predicted_class in emergencies) or (decibel_val >= DECIBEL_THRESHOLD)
+    EMERGENCY = predicted_class in emergencies
+    return EMERGENCY
+
+
+# if EMERGENCY:
+#   # send notification
+#   pass
 
 def send_slack_message(text):
     import requests
@@ -27,25 +58,26 @@ def send_slack_message(text):
     url = "https://slack.com/api/chat.postMessage"
 
     payload = json.dumps({
-    "channel": "C03ESA8MVGS",
-    "text": text
+        "channel": "C03ESA8MVGS",
+        "text": text
     })
     headers = {
-    'Authorization': 'Bearer xoxb-3526104312160-3707970622327-hI02YFIK0gl7ae2snN6V8Sbe',
-    'Content-Type': 'application/json'
+        'Authorization': 'Bearer xoxb-3526104312160-3707970622327-hI02YFIK0gl7ae2snN6V8Sbe',
+        'Content-Type': 'application/json'
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
     print(response.text)
 
-app = Flask(__name__)
 
+app = Flask(__name__)
 
 
 @app.route('/')
 def hello():
     return 'Welcome to SOS backend!'
+
 
 @app.route('/slack/sendText')
 def sendText():
@@ -56,20 +88,28 @@ def sendText():
     except:
         return {"message": "Internal server error", "status": 500}
 
+
 @app.route('/serveModel', methods=['GET', 'POST'])
 def serveModel():
     if(request.method == 'GET'):
         return 'This is a post request test, use post method'
     if(request.method == 'POST'):
-        file = request.files['wav_file']
-        file.save('data/runtime.wav')
-        
+        f = request.get_json()
+        blob = (f['wav_blob'])
+        print(blob[:4])
+        example_audio_file_path = 'data/runtime2.wav'
+
+        base64_to_wav(blob, example_audio_file_path)
+
         # return "Test"
-        classifier = sb.pretrained.EncoderClassifier.from_hparams(source="speechbrain/urbansound8k_ecapa", savedir="pretrained_models/gurbansound8k_ecapa")
-        example_audio_file_path = 'data/runtime.wav'
-        out_prob, score, index, text_lab = classifier.classify_file(example_audio_file_path)
-        print(text_lab)
-        return(str(text_lab[0]))
+        classifier = sb.pretrained.EncoderClassifier.from_hparams(
+            source="speechbrain/urbansound8k_ecapa", savedir="pretrained_models/gurbansound8k_ecapa")
+        out_prob, score, index, text_lab = classifier.classify_file(
+            example_audio_file_path)
+        EMERGENCY = check_emergency(str(text_lab[0]))
+        # print(text_lab)
+        return({'prediction': str(text_lab[0]), 'EMERGENCY': EMERGENCY})
+
 
 @app.route('/getBlob', methods=['GET', 'POST'])
 def convertFileToBlob():
