@@ -39,7 +39,7 @@ export default function App() {
     });
   }
   useEffect(() => {
-    setInterval(() => onDisplayNotification(), 1000)
+    // setInterval(() => onDisplayNotification(), 1000)
   }, [])
 
 
