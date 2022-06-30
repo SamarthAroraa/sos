@@ -51,6 +51,9 @@ def check_emergency(predicted_class):
 #   # send notification
 #   pass
 
+user="U03ESA58B1Q"
+user2="U03M8AFGBBM"
+
 def send_slack_message(text):
     import requests
     import json
@@ -59,6 +62,25 @@ def send_slack_message(text):
 
     payload = json.dumps({
         "channel": "C03ESA8MVGS",
+        "text": text
+    })
+    headers = {
+        'Authorization': 'Bearer xoxb-3526104312160-3707970622327-hI02YFIK0gl7ae2snN6V8Sbe',
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+
+def send_slack_message_to_samarth():
+    import requests
+    import json
+
+    url = "https://slack.com/api/chat.postMessage"
+    text="Hi, Samarth. Your friend Aaradhya might be in trouble, please check on them at https://goo.gl/maps/KnH2sfDC8rfP4x6R6"
+    payload = json.dumps({
+        "channel": user2,
         "text": text
     })
     headers = {
@@ -84,6 +106,7 @@ def sendText():
     try:
         text = request.args.get('text')
         send_slack_message(text)
+        send_slack_message_to_samarth()
         return {"text": text, "status": 200}
     except:
         return {"message": "Internal server error", "status": 500}
@@ -107,6 +130,13 @@ def serveModel():
         out_prob, score, index, text_lab = classifier.classify_file(
             example_audio_file_path)
         EMERGENCY = check_emergency(str(text_lab[0]))
+        if(EMERGENCY):
+            try:
+                send_slack_message('There is a siren off nearby. You might want to look around :rotating_light:')
+                send_slack_message_to_samarth()
+            except:
+                pass
+
         # print(text_lab)
         return({'prediction': str(text_lab[0]), 'EMERGENCY': EMERGENCY})
 

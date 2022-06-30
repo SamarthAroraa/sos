@@ -32,7 +32,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
 
   const startRecording = () => {
-    RNSoundLevel.start()
+    // RNSoundLevel.start()
 
     AudioRecord.start();
     // console.log('start')
@@ -61,20 +61,10 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   useEffect(() => {
 
     AudioRecord.init(options);
-    if (sendRequests) {
     startRecording();
     setInterval(async () => { await sampleAudio() }, 5000)
 
-    RNSoundLevel.onNewFrame = (data: any) => {
-      // see "Returned data" section below
-      setDecibel(data.value +160)
-      // console.log('Sound level info', data)
-      setDecibel(data.value + 160)
-      // console.log('Sound level info', data)
-    }
-    }
 
-    getLocation()
 
   }, [])
 
@@ -122,7 +112,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const stopRecording = async () => {
 
     let audioFile = await AudioRecord.stop();
-    RNSoundLevel.stop()
+    // RNSoundLevel.stop()
     // console.log("audioFIle", audioFile)
     const recording = await FileSystem.readFile(audioFile, 'base64');
     // console.log('stopping')
