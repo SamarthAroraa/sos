@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useEffect, useState } from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, Button } from 'react-native';
 // @ts-ignore
 import RNSoundLevel from 'react-native-sound-level'
 import EditScreenInfo from '../components/EditScreenInfo';
@@ -10,6 +10,13 @@ import AudioRecord from 'react-native-audio-record';
 import { Dirs, FileSystem } from 'react-native-file-access';
 import axios from 'axios'
 import sendNotifications from '../utils/SendNotification'
+// import ModalScreen from './ModalScreen';
+import AddContact from '../components/AddContact';
+// import {Button, View, StyleSheet} from 'react-native';
+import { AsyncStorage } from 'react-native';
+
+
+// import Modal from 'react-native-modal';
 import ModalScreen from './ModalScreen';
 import GetLocation from 'react-native-get-location'
 
@@ -30,6 +37,24 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const [decibel, setDecibel] = useState();
   const [sendRequests, setSendRequests] = useState(true)
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
+
+
+
+  const getContactName = async () => {
+    let name = await AsyncStorage.getItem('emergency_contact_name');
+    console.log(name)
+    return name;
+  }
+
+  const getContactSlackId = async () => {
+    let id = await AsyncStorage.getItem('emergency_contact_slack');
+    console.log(id)
+    return id;
+  }
 
   const startRecording = () => {
     // RNSoundLevel.start()
@@ -45,17 +70,17 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     await stopRecording();
     startRecording();
   }
-  
+
   const getLocation = () => {
     GetLocation.getCurrentPosition({
       enableHighAccuracy: true,
       timeout: 15000,
     }).then(location => {
       console.log(location);
-    }) .catch(error => {
+    }).catch(error => {
       const { code, message } = error;
       console.warn(code, message);
-  })
+    })
   }
 
   useEffect(() => {
@@ -68,11 +93,39 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
   }, [])
 
+  const SendSOSLocation = () => {
+    console.log('sos sending')
+    let req_data = JSON.stringify({
+      "slackId": getContactSlackId,
+      "Name": getContactName
+    });
+    let config = {
+      method: 'post',
+      url: 'https://safeoversorry.pagekite.me/slackLocation',
+      // url: 'https://127.0.0.1:5000/serveModel',
 
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: req_data
+    };
+    axios(config)
+      .then(function (response) {
+        // setClassification(JSON.stringify(response.data['prediction']));
+        // setEmergency(response.data['EMERGENCY']);
+        console.log(response)
+      })
+      .catch(function (error) {
+        console.log(error);
+
+
+      });
+  }
   useEffect(() => {
     if (emergency) {
       if (sendRequests) {
-      sendNotifications()
+        sendNotifications()
+        // SendSOSLocation()
       }
     }
   }, [emergency])
@@ -99,7 +152,6 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     }
 
   }
-
 
 
 
@@ -146,50 +198,34 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
   }
 
-
-  // return (
-  //   <View style={styles.container}>
-  //     <Text style={styles.title}>{classification}</Text>
-  //     <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-  //     <EditScreenInfo path="/screens/TabOneScreen.tsx" />
-  //     {/* <TouchableOpacity onPress={() => {
-  //       startRecording()
-  //     }}>
-  //       <Text>Start Recording</Text>
-  //     </TouchableOpacity>
-  //     <TouchableOpacity onPress={() => {
-  //       stopRecording()
-  //     }}>
-  //       <Text>Stop Recording</Text>
-  //     </TouchableOpacity> */}
-  //   </View>
-  // );
   const type = 1;
   return (
     <View style={styles.container}>
-      <View style={[styles.sirenContainer, { backgroundColor: emergency === false ? 'blue' : 'red', }]}>
-        <Text style={{ fontSize: 20, color: 'white' }}>{sendRequests ? classification : "Auto classification Disabled for 5 hours"}</Text>
-        <Text>
-          {sendRequests ? decibel : "However, you can still trigger manual SOS"}
-        </Text>
+      <View style={[styles.sirenContainer, { backgroundColor: emergency === false ? '#d8e2dc' : '#6d6875', }]}>
+        <Text style={{ fontSize: 20, color: emergency === false ? '#6d6875' : 'white', textAlign: 'center' }}>{sendRequests ? classification : "Auto classification disabled for 30 minutes"}</Text>
       </View>
 
       <TouchableOpacity style={{
-        height: 200, width: 200, borderRadius: 100, backgroundColor: emergency === false ? 'red' : 'green',
+        height: 250, width: 250, borderRadius: 150, backgroundColor: emergency === false ? '#ffb4a2' : '#6d6875',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 100,
+        marginTop: 80,
+        borderColor: 'white',
+        borderWidth: 2,
+        padding: 40,
+        marginBottom: 80
       }}
         onPress={toggleEmergency}
       >
-        <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold', textAlign: 'center', }}>
+        <Text style={{ fontSize: 35, color: 'white', fontWeight: 'bold', textAlign: 'center', }}>
           {sendRequests ?
-            (emergency === false ? "HELP ME!" : "I'M SAFE NOW") :
+            (emergency === false ? "Help Me!" : "I'm Safe Now.") :
             "HELP ME!"}
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => {
+
+      {/* <TouchableOpacity onPress={() => {
         console.log("Add modal Here")
       }} style={{
         width: '90%',
@@ -205,7 +241,21 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
         <Text style={{ fontSize: 20, color: 'blue' }}>
           Add Emergency Contact
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <View style={[styles.container]}>
+        <Button color="#6d6875" style={{ padding: 20 }} title="Add Emergency Contact" onPress={toggleModal}>
+
+        </Button>
+        <Modal
+          isVisible={isModalVisible} >
+          <View>
+            <AddContact />
+            <View style={{ marginTop: 20 }}>
+              <Button color="#6d6875" title="Hide modal" onPress={toggleModal} />
+            </View>
+          </View>
+        </Modal>
+      </View>
     </View>
   );
 }
@@ -214,7 +264,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    marginTop: 20
+    marginTop: 20,
+    backgroundColor: '#e5989b'
   },
   sirenContainer: {
     width: '90%',
@@ -223,7 +274,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 20,
-    paddingHorizontal: 40
+    paddingHorizontal: 40,
+    height: 120,
+    borderRadius: 20,
+    marginTop: 20
   },
   title: {
     fontSize: 20,

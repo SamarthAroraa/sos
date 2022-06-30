@@ -15,7 +15,7 @@ export default async function onDisplayNotification() {
     // Display a notification
     await notifee.displayNotification({
         title: 'SIREN AROUND YOU',
-        body: 'Look around please',
+        body: ' Look around please.',
         android: {
             channelId,
             // smallIcon: 'name-of-a-small-icon', // optional, defaults to 'ic_launcher'.

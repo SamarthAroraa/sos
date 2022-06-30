@@ -13,5 +13,8 @@
     "url": "git@git.soma.salesforce.com:samarth-arora/InternHackathon2022.git"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "react-native-modal": "^13.0.1"
+  }
 }
